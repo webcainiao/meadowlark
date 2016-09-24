@@ -12,6 +12,11 @@ app.set('port',process.env.PORT || 3000);
 
 // 在所有路由之前添加中间件
 app.use(express.static(__dirname + '/public'));
+// 用一些中间件来检测查询字符串中的test=1
+app.use(function(req,res,next){
+	res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+	next();
+});
 // 添加首页和关于页面的路由
 app.get('/',function(req,res){
 	res.render('home');
