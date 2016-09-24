@@ -23,8 +23,11 @@ app.get('/',function(req,res){
 })
 app.get('/about',function(req,res){
 	// 随机发送幸运月饼
-	res.render('about',{fortune:fortune.getFortune()});
-})
+	res.render('about',{
+		fortune:fortune.getFortune(),
+		pageTestScript:'/qa/tests-about.js'
+	});
+});
 
 // 404 catch-all处理器(中间件)
 app.use(function(req,res,next){
