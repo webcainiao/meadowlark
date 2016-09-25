@@ -13,10 +13,18 @@ app.set('port',process.env.PORT || 3000);
 // 在所有路由之前添加中间件
 app.use(express.static(__dirname + '/public'));
 // 用一些中间件来检测查询字符串中的test=1
-// app.use(function(req,res,next){
-// 	res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
-// 	next();
-// });
+app.use(function(req,res,next){
+	res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+	next();
+});
+// 创建中间件给res.locals.partials对象添加数据
+app.use(function(req,res,next){
+	if (!res.locals.partials) {
+		res.locals.partials = {};
+	}
+	res.locals.partials.weather = getWeatherData();
+	next();
+})
 // 添加首页和关于页面的路由
 app.get('/',function(req,res){
 	res.render('home');
@@ -36,16 +44,31 @@ app.get('/headers',function(req,res){
 	}
 	res.send(s);
 })
+// 将上下文传递给视图，包括查询字符串，cookie,session值
+app.get('/greeting',function(req,res){
+	res.render('about',{
+		message:'welcome',
+		style:req.query.style,
+		userid:req.cookie,
+		username:req.session
+	});
+})
 // 下面的layout没有布局文件，即views/no-layout.handlebars必须包含必要的html
 app.get('/no-layout',function(req,res){
 	res.render('no-layout',{layout:null});
 })
-// 404 catch-all处理器(中间件)
+// 使用布局文件views/layouts/custom.handlebars
+app.get('/custom-layout',function(req,res){
+	// 1./views/custom-layout.handlebars 2./views/layouts/custom.handlebars
+	// 下边代码，在访问localhost:3000/custom-layout时，会渲染成/views/layouts/custom.handlebars
+	res.render('custom-layout',{layout:'custom'});
+})
+// 404 catch-all处理器(中间件),路由后面
 app.use(function(req,res,next){
 	res.status(404);
 	res.render('404');
 })
-// 500错误处理器(中间件)
+// 500错误处理器(中间件)，路由后面
 app.use(function(err,req,res,next){
 	console.error(err.stack);
 	res.status(500);
@@ -55,3 +78,32 @@ app.use(function(err,req,res,next){
 app.listen(app.get('port'),function(){
 	console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-c to terminate.');
 });
+
+// 在应用程序文件中，创建一个方法获取当前天气数据
+function getWeatherData(){
+	return {
+		locations:[
+			{
+				name: 'Portland',
+				forecastUrl: 'http://www.wunderground.com/US/OR/Portland.html',
+				iconUrl: 'http://icons-ak.wxug.com/i/c/k/cloudy.gif',
+				weather: 'Overcast',
+				temp: '54.1 F (12.3 C)'
+			},
+			{
+				name: 'Bend',
+				forecastUrl: 'http://www.wunderground.com/US/OR/Bend.html',
+				iconUrl: 'http://icons-ak.wxug.com/i/c/k/partlycloudy.gif',
+				weather: 'Partly Cloudy',
+				temp: '55.0 F (12.8 C)'
+			},
+			{
+				name: 'Manzanita',
+				forecastUrl: 'http://www.wunderground.com/US/OR/Manzanita.html',
+				iconUrl: 'http://icons-ak.wxug.com/i/c/k/rain.gif',
+				weather: 'Light Rain',
+				temp: '55.0 F (12.8 C)'
+			}
+		]
+	};
+}
