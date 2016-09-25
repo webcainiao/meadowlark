@@ -13,10 +13,10 @@ app.set('port',process.env.PORT || 3000);
 // 在所有路由之前添加中间件
 app.use(express.static(__dirname + '/public'));
 // 用一些中间件来检测查询字符串中的test=1
-app.use(function(req,res,next){
-	res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
-	next();
-});
+// app.use(function(req,res,next){
+// 	res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+// 	next();
+// });
 // 添加首页和关于页面的路由
 app.get('/',function(req,res){
 	res.render('home');
@@ -24,11 +24,22 @@ app.get('/',function(req,res){
 app.get('/about',function(req,res){
 	// 随机发送幸运月饼
 	res.render('about',{
-		fortune:fortune.getFortune(),
-		pageTestScript:'/qa/tests-about.js'
+		fortune:fortune.getFortune()
 	});
 });
-
+// 添加获取请求头信息的路由
+app.get('/headers',function(req,res){
+	res.set('Content-Type','text/plain');
+	var s = '';
+	for(var name in req.headers){
+		s += name + ':' + req.headers[name] + '\n';
+	}
+	res.send(s);
+})
+// 下面的layout没有布局文件，即views/no-layout.handlebars必须包含必要的html
+app.get('/no-layout',function(req,res){
+	res.render('no-layout',{layout:null});
+})
 // 404 catch-all处理器(中间件)
 app.use(function(req,res,next){
 	res.status(404);
