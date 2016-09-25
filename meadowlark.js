@@ -3,7 +3,18 @@ var express = require('express');
 var fortune = require('./lib/fortune.js');
 var app = express();
 // 设置handlebars视图引擎
-var handlebars = require('express3-handlebars').create({defaultLayout:'main'});//默认布局
+var handlebars = require('express3-handlebars').create({
+					defaultLayout:'main',
+					helpers:{
+						section:function(name,options){
+							if (!this._sections) {
+								this._sections = {};
+							}
+							this._sections[name] = options.fn(this);
+							return null;
+						}
+					}
+				});//默认布局
 app.engine('handlebars',handlebars.engine);
 app.set('view engine','handlebars');
 
@@ -25,6 +36,7 @@ app.use(function(req,res,next){
 	res.locals.partials.weather = getWeatherData();
 	next();
 })
+
 // 添加首页和关于页面的路由
 app.get('/',function(req,res){
 	res.render('home');
@@ -63,6 +75,10 @@ app.get('/custom-layout',function(req,res){
 	// 下边代码，在访问localhost:3000/custom-layout时，会渲染成/views/layouts/custom.handlebars
 	res.render('custom-layout',{layout:'custom'});
 })
+// jquery-test
+app.get('/jquery-test', function(req, res){
+	res.render('jquery-test');
+});
 // 404 catch-all处理器(中间件),路由后面
 app.use(function(req,res,next){
 	res.status(404);
