@@ -79,6 +79,18 @@ app.get('/custom-layout',function(req,res){
 app.get('/jquery-test', function(req, res){
 	res.render('jquery-test');
 });
+// 针对nursery rhyme 和 Ajax调用的路由处理程序
+app.get('/nursery-rhyme',function(req,res){
+	res.render('nursery-rhyme');
+});
+app.get('/data/nursery-rhyme',function(req,res){
+	res.json({
+		animal:'squirrel',
+		bodyPart:'tail',
+		adjective:'bushy',
+		noun:'heck'
+	});
+});
 // 404 catch-all处理器(中间件),路由后面
 app.use(function(req,res,next){
 	res.status(404);
