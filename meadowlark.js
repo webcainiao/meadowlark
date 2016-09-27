@@ -1,6 +1,7 @@
 var express = require('express');
 // 引入关于页面的模块
 var fortune = require('./lib/fortune.js');
+var bodyParser = require('body-parser');
 var app = express();
 // 设置handlebars视图引擎
 var handlebars = require('express3-handlebars').create({
@@ -37,7 +38,9 @@ app.use(function(req,res,next){
 	next();
 })
 // body-parser,解析URL编码体
-app.use(require('body-parser')());
+// app.use(require('body-parser')());
+app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.json());
 
 // 添加首页和关于页面的路由
 app.get('/',function(req,res){
@@ -102,11 +105,17 @@ app.get('/thank-you',function(req,res){
 	res.render('thank-you');
 });
 app.post('/process',function(req,res){
-	console.log('Form (from querystring): ' + req.query.form);
-	console.log('CSRF token (from hidden form field): ' + req.body._csrf);
-	console.log('Name (from visible form field): ' + req.body.name);
-	console.log('Email (from visible form field): ' + req.body.email);
-	res.redirect(303,'/thank-you');
+	// console.log('Form (from querystring): ' + req.query.form);
+	// console.log('CSRF token (from hidden form field): ' + req.body._csrf);
+	// console.log('Name (from visible form field): ' + req.body.name);
+	// console.log('Email (from visible form field): ' + req.body.email);
+	if (req.xhr || req.accepts('json,html') === 'json') {
+		// 如果发生错误，应该发送{error:'error description'}
+		res.send({success:true});
+	} else {
+		// 如果发生错误，应该重定向到错误页面
+		res.redirect(303,'/thank-you');
+	}
 })
 // 404 catch-all处理器(中间件),路由后面
 app.use(function(req,res,next){
