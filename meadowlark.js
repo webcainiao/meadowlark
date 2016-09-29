@@ -5,6 +5,9 @@ var bodyParser = require('body-parser');
 var formidable = require('formidable');
 var credentials = require('./credentials.js');
 var app = express();
+// 创建子域名‘admin’,....它应该出现在所有其他路由之前
+var admin = express.Router();
+app.use(require('vhost')('admin.*',admin));
 // 设置handlebars视图引擎
 var handlebars = require('express3-handlebars').create({
 					defaultLayout:'main',
@@ -44,6 +47,13 @@ app.use(function(req,res,next){
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 
+// 创建admin的路由，他们可以在任何地方定义
+admin.get('/',function(req,res){
+	res.render('admin/home');
+})
+admin.get('/users',function(req,res){
+	res.render('admin/users');
+})
 // 添加首页和关于页面的路由
 app.get('/',function(req,res){
 	res.render('home');
@@ -140,6 +150,16 @@ app.post('/contest/vacation-photo/:year/:month',function(req,res){
 		res.redirect(303,'/thank-you');
 	})
 })
+// 
+app.get(/foo|hoo(name)?loo/, 
+	function(req,res,next){
+		if(Math.random() < 0.5) return next();
+		res.send('sometimes this');
+	}, 
+	function(req,res){
+		res.send('and sometimes that');
+	}
+);
 // 404 catch-all处理器(中间件),路由后面
 app.use(function(req,res,next){
 	res.status(404);
